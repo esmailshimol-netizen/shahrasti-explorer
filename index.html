@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>শাহরাস্তি এক্সপ্লোরার - চাঁদপুর</title>
+  <!-- HTML2Canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #eef2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
+    
+    .card-container {
+      background: #ffffff;
+      max-width: 450px;
+      width: 100%;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      border: 2px solid #006a4e;
+      position: relative;
+    }
+    
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h2 { color: #006a4e; margin: 5px 0; font-size: 26px; }
+    .header p { color: #555; font-size: 14px; margin: 0; }
+    
+    .profile-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #006a4e;
+      display: none;
+    }
+
+    .input-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-group input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .spot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .spot-item {
+      display: flex;
+      align-items: center;
+      background: #f8faf9;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid #e0e0e0;
+      transition: all 0.2s ease;
+    }
+
+    .spot-item:hover { background: #e8f5e9; border-color: #a5d6a7; }
+    .spot-item input { margin-right: 12px; transform: scale(1.2); cursor: pointer; }
+    .spot-item label { cursor: pointer; font-size: 15px; width: 100%; color: #333; }
+
+    .result-box {
+      background: linear-gradient(135deg, #006a4e, #004d38);
+      color: white;
+      text-align: center;
+      padding: 18px;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.2);
+    }
+    
+    .result-box h3 { margin: 0; font-size: 22px; }
+    .result-box p { margin: 6px 0 0 0; font-size: 15px; opacity: 0.95; }
+
+    .btn-download {
+      width: 100%;
+      background: #f42a41;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 18px;
+      transition: background 0.3s;
+    }
+
+    .btn-download:hover { background: #d02235; }
+    
+    .no-capture { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="card-container" id="captureCard">
+    <div class="header">
+      <h2>শাহরাস্তি এক্সপ্লোরার 🗺️</h2>
+      <p>চাঁদপুর জেলার শাহরাস্তি উপজেলার কতটি স্থান আপনি ঘুরেছেন?</p>
+    </div>
+
+    <div class="profile-section">
+      <img id="avatar" class="avatar-preview" src="" alt="প্রোফাইল ছবি">
+      <div class="input-group no-capture" id="inputGroup">
+        <input type="text" id="userName" placeholder="আপনার নাম লিখুন..." oninput="updateResult()">
+        <input type="file" id="imageInput" accept="image/*" onchange="loadProfileImage(event)">
+      </div>
+    </div>
+
+    <!-- শাহরাস্তির স্থানসমূহ -->
+    <div class="spot-list">
+      <div class="spot-item"><input type="checkbox" class="spot" id="s1" onchange="updateResult()"><label for="s1">হযরত শাহরাস্তি (র:) মাজার শরীফ</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="s2" onchange="updateResult()"><label for="s2">ঐতিহাসিক মেহের কালীবাড়ি</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="s3" onchange="updateResult()"><label for="s3">শাহরাস্তি বড় দিঘি</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="s4" onchange="updateResult()"><label for="s4">নুরপুর শাতালিয়া দরবার শরীফ</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="s5" onchange="updateResult()"><label for="s5">শাহরাস্তি উনকিলা হাই স্কুল মাঠ</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="s6" onchange="updateResult()"><label for="s6">দাকাতীয় নদী পার / সূচীপাড়া ব্রিজ</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="s7" onchange="updateResult()"><label for="s7">শাহরাস্তি গেইট লাকসাম রোড</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="s8" onchange="updateResult()"><label for="s8">চিতোষী বাজার</label></div>
+    </div>
+
+    <div class="result-box">
+      <h3 id="scoreText">০ / ৮ টি স্থান</h3>
+      <p id="percentText">আপনি শাহরাস্তির ০% ঘুরেছেন!</p>
+    </div>
+
+    <button class="btn-download no-capture" id="downloadBtn" onclick="downloadImage()">কার্ডটি ডাউনলোড করুন 📸</button>
+  </div>
+
+  <script>
+    function updateResult() {
+      const name = document.getElementById('userName').value.trim();
+      const checkboxes = document.querySelectorAll('.spot');
+      const total = checkboxes.length;
+      const checked = document.querySelectorAll('.spot:checked').length;
+      const percentage = Math.round((checked / total) * 100);
+
+      document.getElementById('scoreText').innerText = `${checked} / ${total} টি স্থান`;
+      
+      let displayName = name ? `${name}-এর শাহরাস্তি ভ্রমণ` : 'আপনার শাহরাস্তি ভ্রমণ';
+      document.getElementById('percentText').innerText = `${displayName}: ${percentage}% স্থান দেখা সম্পন্ন!`;
+    }
+
+    function loadProfileImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('avatar');
+        output.src = reader.result;
+        output.style.display = 'block';
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function downloadImage() {
+      const card = document.getElementById('captureCard');
+      const noCaptureElements = document.querySelectorAll('.no-capture');
+
+      noCaptureElements.forEach(el => el.style.display = 'none');
+
+      html2canvas(card, { scale: 2 }).then(canvas => {
+        let link = document.createElement('a');
+        link.download = 'shahrasti-explorer.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        noCaptureElements.forEach(el => el.style.display = 'block');
+      });
+    }
+  </script>
+
+</body>
+</html>
