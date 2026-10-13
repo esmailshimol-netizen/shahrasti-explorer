@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>শাহরাস্তি গ্রাম ও দর্শনীয় স্থান এক্সপ্লোরার</title>
+  <!-- HTML2Canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f0f2f5; display: flex; justify-content: center; padding: 15px; margin: 0; }
+    
+    .card-container {
+      background: #faf8f3;
+      max-width: 460px;
+      width: 100%;
+      padding: 22px;
+      border-radius: 24px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+      border: 1px solid #e2dbcc;
+      position: relative;
+    }
+    
+    /* Top Header Section */
+    .top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eae3d0;
+      padding-bottom: 12px;
+    }
+
+    .profile-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-preview {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #006a4e;
+      background: #e0dccc;
+    }
+
+    .user-titles .subtitle {
+      font-size: 11.5px;
+      color: #666;
+      margin: 0;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .user-titles h3 {
+      font-size: 18px;
+      color: #111;
+      margin: 2px 0 0 0;
+    }
+
+    /* Score Badge */
+    .score-badge {
+      background: #006a4e;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 14px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.25);
+    }
+
+    /* Input Controls */
+    .input-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+      background: #eee8d5;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #dcd5c0;
+    }
+    .input-controls input {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13.5px;
+      outline: none;
+      background: #fff;
+    }
+
+    /* Dynamic Landmark Feature Display Box */
+    .landmark-box {
+      width: 100%;
+      background: #eee8d5;
+      border-radius: 18px;
+      padding: 18px 12px;
+      border: 1.5px solid #006a4e;
+      text-align: center;
+      position: relative;
+      margin-bottom: 12px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .landmark-badge {
+      background: #006a4e;
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+
+    .landmark-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #006a4e;
+      margin: 4px 0;
+    }
+
+    .landmark-spot {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .landmark-desc {
+      font-size: 12.5px;
+      color: #555;
+      line-height: 1.4;
+      max-width: 90%;
+    }
+
+    .spot-icon {
+      font-size: 32px;
+      margin-bottom: 5px;
+    }
+
+    /* Search & Checklist Section */
+    .search-box {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #dcd5c0;
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+
+    .checklist-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #006a4e;
+      margin: 8px 0 4px 0;
+    }
+
+    .spot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding-right: 4px;
+      border-top: 1px solid #eae3d0;
+      padding-top: 6px;
+    }
+
+    .spot-item {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #e2dbcc;
+    }
+    .spot-item input { margin-right: 10px; transform: scale(1.1); cursor: pointer; }
+    .spot-item label { cursor: pointer; font-size: 13px; width: 100%; color: #333; font-weight: 500; }
+
+    /* Footer Progress */
+    .footer-progress {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #eae3d0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .progress-text {
+      font-size: 13.5px;
+      font-weight: bold;
+      color: #333;
+    }
+    .watermark {
+      font-size: 12px;
+      color: #006a4e;
+      font-weight: 700;
+    }
+
+    .btn-download {
+      width: 100%;
+      background: #006a4e;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.3);
+    }
+    .btn-download:hover { background: #004d38; }
+    .no-capture { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="card-container" id="captureCard">
+    
+    <!-- Top Header Layout -->
+    <div class="top-header">
+      <div class="profile-box">
+        <img id="avatar" class="avatar-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 24 24' fill='%23999'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" alt="প্রোফাইল ছবি">
+        <div class="user-titles">
+          <p class="subtitle">শাহরাস্তি এক্সপ্লোরার ম্যাপ</p>
+          <h3 id="userNameDisplay">ইসমাইল হোসেন</h3>
+        </div>
+      </div>
+      
+      <div class="score-badge" id="scoreNum">
+        ০/১৫৫
+      </div>
+    </div>
+
+    <!-- Controls to Edit Name & Image -->
+    <div class="input-controls no-capture">
+      <input type="text" id="userName" placeholder="আপনার নাম লিখুন..." oninput="updateResult()" value="ইসমাইল হোসেন">
+      <input type="file" id="imageInput" accept="image/*" onchange="loadProfileImage(event)">
+    </div>
+
+    <!-- Dynamic Auto-Spotlight Landmark Box -->
+    <div class="landmark-box" id="landmarkDisplay">
+      <div class="spot-icon" id="spotIcon">📍</div>
+      <div class="landmark-badge">শাহরাস্তি হাইলাইটেড স্পট</div>
+      <div class="landmark-title" id="spotVillage">গ্রাম সিলেক্ট করুন</div>
+      <div class="landmark-spot" id="spotName">শাহরাস্তি উপজেলা ভ্রমণ</div>
+      <div class="landmark-desc" id="spotDesc">নিচের তালিকা থেকে আপনার ভ্রমণ করা গ্রামগুলো সিলেক্ট করুন। সিলেক্ট করা গ্রামের ঐতিহাসিক ও সুন্দর জায়গাগুলো এখানে ভেসে উঠবে!</div>
+    </div>
+
+    <!-- Search Box for Villages -->
+    <div class="no-capture">
+      <input type="text" id="searchInput" class="search-box" placeholder="🔎 ১৫৫টি গ্রাম থেকে খুঁজুন..." onkeyup="filterVillages()">
+    </div>
+
+    <div class="checklist-title no-capture">গ্রাম নির্বাচন করুন:</div>
+
+    <!-- Village Checklists linked with Landmarks -->
+    <div class="spot-list no-capture" id="villageList">
+      <div class="spot-item"><input type="checkbox" class="spot" id="v1" data-name="মেহের" data-spot="ঐতিহাসিক মেহের কালীবাড়ি" data-icon="🕌" data-desc="শাহরাস্তির সুপ্রাচীন ঐতিহাসিক কালীতলা ও মেহের রাজবাড়ির ঐতিহ্যবাহী এলাকা।" onchange="updateLandmark(this)"><label for="v1">মেহের</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v2" data-name="উয়ারুক" data-spot="উয়ারুক রেলওয়ে স্টেশন ও বাজার" data-icon="🚉" data-desc="শাহরাস্তি উপজেলার অন্যতম ব্যস্ততম বাণিজ্যিক কেন্দ্র ও ঐতিহ্যবাহী স্থান।" onchange="updateLandmark(this)"><label for="v2">উয়ারুক</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v3" data-name="চিতোষী" data-spot="ডাক ডাকিয়া নদী ও চিতোষী বাজার" data-icon="🌊" data-desc="ডাকাতিয়া নদীর তীরবর্তী প্রাকৃতিক সৌন্দর্যমণ্ডিত ও ঐতিহ্যবাহী চিতোষী অঞ্চল।" onchange="updateLandmark(this)"><label for="v3">চিতোষী</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v4" data-name="সূচীপাড়া" data-spot="সূচীপাড়া ঐতিহ্যবাহী উচ্চ বিদ্যালয় ও বাজার" data-icon="🏫" data-desc="শাহরাস্তির দক্ষিণ অঞ্চলের প্রাণকেন্দ্র ও শিক্ষানগরী এলাকা।" onchange="updateLandmark(this)"><label for="v4">সূচীপাড়া</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v5" data-name="কাঁকৈরতলা" data-spot="শাহরাস্তি উপজেলা পরিষদ ও কালীবাড়ী" data-icon="🏛️" data-desc="শাহরাস্তি উপজেলার প্রশাসনিক কেন্দ্রবিন্দু ও দৃষ্টিনন্দন দিঘি এলাকা।" onchange="updateLandmark(this)"><label for="v5">কাঁকৈরতলা (সদর)</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v6" data-name="ফতেপুর" data-spot="ফতেপুর দিঘি ও গ্রামীণ পথ" data-icon="🌳" data-desc="সবুজ-শ্যামল প্রাকৃতিক পরিবেশ ও ঐতিহ্যবাহী দিঘির সুপ্রসিদ্ধ গ্রাম।" onchange="updateLandmark(this)"><label for="v6">ফতেপুর</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v7" data-name="দেবকরা" data-spot="দেবকরা শাহী মসজিদ" data-icon="🕌" data-desc="শাহরাস্তির সুপ্রাচীন স্থাপত্যশৈলীর ঐতিহাসিক দরগাহ ও মসজিদ এলাকা।" onchange="updateLandmark(this)"><label for="v7">দেবকরা</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v8" data-name="ইছাপুরা" data-spot="ইছাপুরা বিল ও সবুজ প্রান্তর" data-icon="🌾" data-desc="বর্ষাকালে মনোমুগ্ধকর ওয়াটার ভিউ ও গ্রাম্য প্রকৃতির অপূর্ব সংমিশ্রণ।" onchange="updateLandmark(this)"><label for="v8">ইছাপুরা</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v9" data-name="বোলদিঘী" data-spot="ঐতিহাসিক বোলদিঘী পাড়" data-icon="🌊" data-desc="শাহরাস্তির অন্যতম প্রাচীন ও বৃহদাকার ঐতিহাসিক জলাশয়।" onchange="updateLandmark(this)"><label for="v9">বোলদিঘী</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v10" data-name="নয়নগর" data-spot="নয়নগর বটতলা ও মেঠোপথ" data-icon="🌳" data-desc="শাহরাস্তির পূর্ব সীমানার মনোরম প্রাকৃতিক সৌন্দর্যমণ্ডিত মেঠোপথ।" onchange="updateLandmark(this)"><label for="v10">নয়নগর</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v11" data-name="পরানপুর" data-spot="পরানপুর ডাকাতিয়া নদী তীর" data-icon="🛶" data-desc="ডাকাতিয়া নদীর পাড়ের বাতাস ও সূর্যাস্ত দেখার চমৎকার জায়গা।" onchange="updateLandmark(this)"><label for="v11">পরানপুর</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="v12" data-name="বোস্তা" data-spot="বোস্তা সুপারি বাগান ও কৃষি খামার" data-icon="🌴" data-desc="শাহরাস্তির অত্যন্ত পরিচিত সুপারি ও ফলজ বাগানের মনোরম সবুজ গ্রাম।" onchange="updateLandmark(this)"><label for="v12">বোস্তা</label></div>
+    </div>
+
+    <!-- Footer Progress -->
+    <div class="footer-progress">
+      <div class="progress-text" id="percentText">০% গ্রাম ঘোরা হয়েছে</div>
+      <div class="watermark">📍 Shahrasti Explorer</div>
+    </div>
+
+    <button class="btn-download no-capture" onclick="downloadImage()">কার্ড ডাউনলোড করুন 📸</button>
+  </div>
+
+  <script>
+    const totalVillages = 155;
+
+    function updateResult() {
+      const nameInput = document.getElementById('userName').value.trim();
+      document.getElementById('userNameDisplay').innerText = nameInput ? nameInput : 'ভ্রমণকারী';
+      
+      const checked = document.querySelectorAll('.spot:checked').length;
+      const percentage = Math.round((checked / totalVillages) * 100);
+
+      document.getElementById('scoreNum').innerText = `${checked}/${totalVillages}`;
+      document.getElementById('percentText').innerText = `${percentage}% গ্রাম ঘোরা হয়েছে`;
+    }
+
+    function updateLandmark(element) {
+      updateResult();
+      
+      if (element.checked) {
+        const villageName = element.getAttribute('data-name');
+        const spotName = element.getAttribute('data-spot');
+        const icon = element.getAttribute('data-icon');
+        const desc = element.getAttribute('data-desc');
+
+        document.getElementById('spotIcon').innerText = icon || '📍';
+        document.getElementById('spotVillage').innerText = villageName;
+        document.getElementById('spotName').innerText = spotName;
+        document.getElementById('spotDesc').innerText = desc;
+      }
+    }
+
+    function filterVillages() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const items = document.querySelectorAll('.spot-item');
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(input)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    function loadProfileImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('avatar');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function downloadImage() {
+      const card = document.getElementById('captureCard');
+      const noCaptureElements = document.querySelectorAll('.no-capture');
+
+      noCaptureElements.forEach(el => el.style.display = 'none');
+
+      html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
+        let link = document.createElement('a');
+        link.download = 'shahrasti-travel-spotlight.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        noCaptureElements.forEach(el => el.style.display = 'block');
+      });
+    }
+  </script>
+
+</body>
+</html>
