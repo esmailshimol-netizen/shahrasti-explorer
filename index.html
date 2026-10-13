@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>শাহরাস্তি এক্সপ্লোরার - ইন্টারঅ্যাক্টিভ ম্যাপ</title>
+  <!-- HTML2Canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #eef2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
+    
+    .card-container {
+      background: #ffffff;
+      max-width: 480px;
+      width: 100%;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      border: 2px solid #006a4e;
+      position: relative;
+    }
+    
+    .header { text-align: center; margin-bottom: 15px; }
+    .header h2 { color: #006a4e; margin: 5px 0; font-size: 26px; }
+    .header p { color: #555; font-size: 14px; margin: 0; }
+    
+    .profile-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #006a4e;
+      display: none;
+    }
+
+    .input-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-group input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    /* SVG Map Styling */
+    .map-container {
+      width: 100%;
+      background: #f0f7f4;
+      border-radius: 15px;
+      padding: 15px;
+      border: 1px solid #c8e6c9;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .map-container svg {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+    }
+
+    .union-shape {
+      fill: #d1e7dd;
+      stroke: #006a4e;
+      stroke-width: 2;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .union-shape:hover {
+      fill: #a3cfbb;
+    }
+
+    .union-shape.active {
+      fill: #006a4e !important;
+    }
+
+    .map-text {
+      font-size: 11px;
+      fill: #155724;
+      font-weight: bold;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .map-text.active-text {
+      fill: #ffffff;
+    }
+
+    /* List Styling */
+    .spot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 5px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+
+    .spot-item {
+      display: flex;
+      align-items: center;
+      background: #f8faf9;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid #e0e0e0;
+    }
+
+    .spot-item input { margin-right: 12px; transform: scale(1.2); cursor: pointer; }
+    .spot-item label { cursor: pointer; font-size: 14px; width: 100%; color: #333; }
+
+    .result-box {
+      background: linear-gradient(135deg, #006a4e, #004d38);
+      color: white;
+      text-align: center;
+      padding: 18px;
+      border-radius: 12px;
+      margin-top: 18px;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.2);
+    }
+    
+    .result-box h3 { margin: 0; font-size: 22px; }
+    .result-box p { margin: 6px 0 0 0; font-size: 15px; opacity: 0.95; }
+
+    .btn-download {
+      width: 100%;
+      background: #f42a41;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 18px;
+      transition: background 0.3s;
+    }
+
+    .btn-download:hover { background: #d02235; }
+    .no-capture { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="card-container" id="captureCard">
+    <div class="header">
+      <h2>শাহরাস্তি এক্সপ্লোরার 🗺️</h2>
+      <p>ম্যাপে ক্লিক করে আপনার ভ্রমণ করা ইউনিয়নগুলো সিলেক্ট করুন!</p>
+    </div>
+
+    <div class="profile-section">
+      <img id="avatar" class="avatar-preview" src="" alt="প্রোফাইল ছবি">
+      <div class="input-group no-capture" id="inputGroup">
+        <input type="text" id="userName" placeholder="আপনার নাম লিখুন..." oninput="updateResult()">
+        <input type="file" id="imageInput" accept="image/*" onchange="loadProfileImage(event)">
+      </div>
+    </div>
+
+    <!-- শাহরাস্তির ইন্টারঅ্যাক্টিভ ম্যাপ -->
+    <div class="map-container">
+      <svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+        <path id="map-u1" class="union-shape" d="M130,20 L220,20 L210,70 L120,65 Z" onclick="toggleUnion('u1')"/>
+        <text id="txt-u1" x="170" y="45" class="map-text">মেহের উত্তর</text>
+
+        <path id="map-u2" class="union-shape" d="M120,65 L210,70 L200,120 L110,110 Z" onclick="toggleUnion('u2')"/>
+        <text id="txt-u2" x="160" y="92" class="map-text">মেহের দক্ষিণ</text>
+
+        <path id="map-u3" class="union-shape" d="M220,20 L320,25 L310,80 L210,70 Z" onclick="toggleUnion('u3')"/>
+        <text id="txt-u3" x="260" y="48" class="map-text">রায়শ্রী উত্তর</text>
+
+        <path id="map-u4" class="union-shape" d="M210,70 L310,80 L300,135 L200,120 Z" onclick="toggleUnion('u4')"/>
+        <text id="txt-u4" x="255" y="102" class="map-text">রায়শ্রী দক্ষিণ</text>
+
+        <path id="map-u5" class="union-shape" d="M110,110 L200,120 L190,175 L100,165 Z" onclick="toggleUnion('u5')"/>
+        <text id="txt-u5" x="150" y="142" class="map-text">পৌরসভা</text>
+
+        <path id="map-u6" class="union-shape" d="M20,100 L110,110 L100,165 L10,150 Z" onclick="toggleUnion('u6')"/>
+        <text id="txt-u6" x="60" y="132" class="map-text">টামটা উত্তর</text>
+
+        <path id="map-u7" class="union-shape" d="M10,150 L100,165 L90,220 L5,200 Z" onclick="toggleUnion('u7')"/>
+        <text id="txt-u7" x="50" y="185" class="map-text">টামটা দক্ষিণ</text>
+
+        <path id="map-u8" class="union-shape" d="M100,165 L190,175 L180,230 L90,220 Z" onclick="toggleUnion('u8')"/>
+        <text id="txt-u8" x="140" y="198" class="map-text">সূচীপাড়া উঃ</text>
+
+        <path id="map-u9" class="union-shape" d="M90,220 L180,230 L170,285 L80,275 Z" onclick="toggleUnion('u9')"/>
+        <text id="txt-u9" x="130" y="252" class="map-text">সূচীপাড়া দঃ</text>
+
+        <path id="map-u10" class="union-shape" d="M190,175 L300,135 L280,220 L180,230 Z" onclick="toggleUnion('u10')"/>
+        <text id="txt-u10" x="235" y="185" class="map-text">চিতোষী পূর্ব</text>
+
+        <path id="map-u11" class="union-shape" d="M180,230 L280,220 L260,300 L170,285 Z" onclick="toggleUnion('u11')"/>
+        <text id="txt-u11" x="220" y="258" class="map-text">চিতোষী পশ্চিম</text>
+      </svg>
+    </div>
+
+    <!-- ইউনিয়নসমূহের তালিকা -->
+    <div class="spot-list">
+      <div class="spot-item"><input type="checkbox" class="spot" id="u1" onchange="toggleUnion('u1', true)"><label for="u1">১. মেহের উত্তর ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u2" onchange="toggleUnion('u2', true)"><label for="u2">২. মেহের দক্ষিণ ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u3" onchange="toggleUnion('u3', true)"><label for="u3">৩. রায়শ্রী উত্তর ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u4" onchange="toggleUnion('u4', true)"><label for="u4">৪. রায়শ্রী দক্ষিণ ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u5" onchange="toggleUnion('u5', true)"><label for="u5">৫. শাহরাস্তি পৌরসভা</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u6" onchange="toggleUnion('u6', true)"><label for="u6">৬. টামটা উত্তর ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u7" onchange="toggleUnion('u7', true)"><label for="u7">৭. টামটা দক্ষিণ ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u8" onchange="toggleUnion('u8', true)"><label for="u8">৮. সূচীপাড়া উত্তর ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u9" onchange="toggleUnion('u9', true)"><label for="u9">৯. সূচীপাড়া দক্ষিণ ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u10" onchange="toggleUnion('u10', true)"><label for="u10">১০. চিতোষী পূর্ব ইউনিয়ন</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="u11" onchange="toggleUnion('u11', true)"><label for="u11">১১. চিতোষী পশ্চিম ইউনিয়ন</label></div>
+    </div>
+
+    <div class="result-box">
+      <h3 id="scoreText">০ / ১১ টি এলাকা</h3>
+      <p id="percentText">আপনি শাহরাস্তির ০% এলাকা ঘুরেছেন!</p>
+    </div>
+
+    <button class="btn-download no-capture" id="downloadBtn" onclick="downloadImage()">কার্ডটি ডাউনলোড করুন 📸</button>
+  </div>
+
+  <script>
+    function updateResult() {
+      const name = document.getElementById('userName').value.trim();
+      const checkboxes = document.querySelectorAll('.spot');
+      const total = checkboxes.length;
+      const checked = document.querySelectorAll('.spot:checked').length;
+      const percentage = Math.round((checked / total) * 100);
+
+      document.getElementById('scoreText').innerText = `${checked} / ${total} টি এলাকা`;
+      
+      let displayName = name ? `${name}-এর শাহরাস্তি ভ্রমণ` : 'আপনার শাহরাস্তি ভ্রমণ';
+      document.getElementById('percentText').innerText = `${displayName}: ${percentage}% এলাকা দেখা সম্পন্ন!`;
+    }
+
+    function toggleUnion(id, fromCheckbox = false) {
+      const checkbox = document.getElementById(id);
+      const mapPath = document.getElementById('map-' + id);
+      const mapText = document.getElementById('txt-' + id);
+
+      if (!fromCheckbox) {
+        checkbox.checked = !checkbox.checked;
+      }
+
+      if (checkbox.checked) {
+        if(mapPath) mapPath.classList.add('active');
+        if(mapText) mapText.classList.add('active-text');
+      } else {
+        if(mapPath) mapPath.classList.remove('active');
+        if(mapText) mapText.classList.remove('active-text');
+      }
+
+      updateResult();
+    }
+
+    function loadProfileImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('avatar');
+        output.src = reader.result;
+        output.style.display = 'block';
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function downloadImage() {
+      const card = document.getElementById('captureCard');
+      const noCaptureElements = document.querySelectorAll('.no-capture');
+
+      noCaptureElements.forEach(el => el.style.display = 'none');
+
+      html2canvas(card, { scale: 2 }).then(canvas => {
+        let link = document.createElement('a');
+        link.download = 'shahrasti-explorer-map.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        noCaptureElements.forEach(el => el.style.display = 'block');
+      });
+    }
+  </script>
+
+</body>
+</html>
