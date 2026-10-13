@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>চাঁদপুর জেলা ভ্রমণ মানচিত্র - Chandpur Explorer</title>
+  <!-- HTML2Canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f0f2f5; display: flex; justify-content: center; padding: 15px; margin: 0; }
+    
+    .card-container {
+      background: #fbf9f4;
+      max-width: 460px;
+      width: 100%;
+      padding: 20px;
+      border-radius: 24px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+      border: 1px solid #dfd7c5;
+      position: relative;
+    }
+    
+    /* Top Header Section */
+    .top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #eae3d0;
+      padding-bottom: 10px;
+    }
+
+    .profile-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-preview {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #006a4e;
+      background: #e0dccc;
+    }
+
+    .user-titles .subtitle {
+      font-size: 11px;
+      color: #666;
+      margin: 0;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .user-titles h3 {
+      font-size: 17px;
+      color: #111;
+      margin: 2px 0 0 0;
+    }
+
+    /* Score Badge */
+    .score-badge {
+      background: #006a4e;
+      color: white;
+      padding: 7px 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.25);
+    }
+
+    /* Input Controls */
+    .input-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+      background: #f3efe3;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #e2dbcc;
+    }
+    .input-controls input {
+      padding: 7px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+
+    /* Professional Art Map Box */
+    .map-box {
+      width: 100%;
+      background: #f7f3e8;
+      border-radius: 16px;
+      padding: 10px;
+      border: 1.5px solid #d4ccb4;
+      position: relative;
+      margin-bottom: 10px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .map-box svg {
+      width: 100%;
+      height: auto;
+      max-height: 270px;
+      display: block;
+    }
+
+    /* Map Elements Styling */
+    .river-path {
+      fill: none;
+      stroke: #a2c6e2;
+      stroke-width: 14;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .river-branch {
+      fill: none;
+      stroke: #a2c6e2;
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .upazila-shape {
+      fill: #e5dfcb;
+      stroke: #ffffff;
+      stroke-width: 2;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .upazila-shape:hover {
+      fill: #d5ccb4;
+    }
+
+    .upazila-shape.active {
+      fill: #006a4e !important;
+    }
+
+    .map-label {
+      font-size: 10px;
+      fill: #2c3e35;
+      font-weight: 700;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .upazila-shape.active + .map-label {
+      fill: #ffffff !important;
+    }
+
+    .map-title-header {
+      font-size: 13px;
+      font-weight: bold;
+      color: #006a4e;
+      text-align: center;
+      margin-bottom: 6px;
+      border-bottom: 1px dashed #d4ccb4;
+      padding-bottom: 4px;
+    }
+
+    /* Checklist Section */
+    .checklist-title {
+      font-size: 12.5px;
+      font-weight: bold;
+      color: #006a4e;
+      margin: 6px 0 4px 0;
+    }
+
+    .spot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 160px;
+      overflow-y: auto;
+      padding-right: 4px;
+      border-top: 1px solid #eae3d0;
+      padding-top: 6px;
+    }
+
+    .spot-item {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #e2dbcc;
+      transition: background 0.2s;
+    }
+    .spot-item:hover { background: #f0f7f4; }
+    .spot-item input { margin-right: 10px; transform: scale(1.1); cursor: pointer; }
+    .spot-item label { cursor: pointer; font-size: 13px; width: 100%; color: #333; font-weight: 600; }
+
+    /* Footer Legend & Progress */
+    .footer-progress {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #eae3d0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .progress-text {
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+    }
+    .watermark {
+      font-size: 11.5px;
+      color: #006a4e;
+      font-weight: 700;
+    }
+
+    .btn-download {
+      width: 100%;
+      background: #006a4e;
+      color: white;
+      border: none;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.3);
+    }
+    .btn-download:hover { background: #004d38; }
+    .no-capture { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="card-container" id="captureCard">
+    
+    <!-- Top Header Layout -->
+    <div class="top-header">
+      <div class="profile-box">
+        <img id="avatar" class="avatar-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 24 24' fill='%23999'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" alt="প্রোফাইল ছবি">
+        <div class="user-titles">
+          <p class="subtitle">চাঁদপুর জেলা ভ্রমণ মানচিত্র</p>
+          <h3 id="userNameDisplay">ইসমাইল হোসেন</h3>
+        </div>
+      </div>
+      
+      <div class="score-badge" id="scoreNum">
+        ০/৮
+      </div>
+    </div>
+
+    <!-- Controls to Edit Name & Image -->
+    <div class="input-controls no-capture">
+      <input type="text" id="userName" placeholder="আপনার নাম লিখুন..." oninput="updateResult()" value="ইসমাইল হোসেন">
+      <input type="file" id="imageInput" accept="image/*" onchange="loadProfileImage(event)">
+    </div>
+
+    <!-- Chandpur Artistic Map with Rivers and Zones -->
+    <div class="map-box">
+      <div class="map-title-header">🌊 পদ্মা - মেঘনা - ডাকাতিয়া অববাহিকা</div>
+      <svg viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg">
+        <!-- নদীর পটভূমি বাউন্ডারি (পদ্মা ও মেঘনা নদী) -->
+        <path class="river-path" d="M10,40 Q150,70 240,40 T390,70" />
+        <path class="river-path" d="M240,40 Q260,110 280,260" />
+        <path class="river-branch" d="M240,70 Q300,90 380,120" />
+
+        <!-- ১. মতলব উত্তর -->
+        <g>
+          <path id="u-matlab-n" class="upazila-shape" d="M70,15 L170,15 L165,55 L65,50 Z" onclick="toggleUpazila('u-matlab-n')" />
+          <text class="map-label" x="117" y="35">মতলব উত্তর</text>
+        </g>
+
+        <!-- ২. মতলব দক্ষিণ -->
+        <g>
+          <path id="u-matlab-s" class="upazila-shape" d="M65,50 L165,55 L155,105 L55,95 Z" onclick="toggleUpazila('u-matlab-s')" />
+          <text class="map-label" x="110" y="78">মতলব দক্ষিণ</text>
+        </g>
+
+        <!-- ৩. কচুয়া -->
+        <g>
+          <path id="u-kachua" class="upazila-shape" d="M170,15 L260,20 L250,80 L165,55 Z" onclick="toggleUpazila('u-kachua')" />
+          <text class="map-label" x="210" y="48">কচুয়া</text>
+        </g>
+
+        <!-- ৪. হাজীগঞ্জ -->
+        <g>
+          <path id="u-hajiganj" class="upazila-shape" d="M165,55 L250,80 L235,140 L155,105 Z" onclick="toggleUpazila('u-hajiganj')" />
+          <text class="map-label" x="202" y="98">হাজীগঞ্জ</text>
+        </g>
+
+        <!-- ৫. শাহরাস্তি -->
+        <g>
+          <path id="u-shahrasti" class="upazila-shape" d="M235,140 L320,120 L305,185 L225,180 Z" onclick="toggleUpazila('u-shahrasti')" />
+          <text class="map-label" x="272" y="152">শাহরাস্তি</text>
+        </g>
+
+        <!-- ৬. চাঁদপুর সদর -->
+        <g>
+          <path id="u-sadar" class="upazila-shape" d="M55,95 L155,105 L140,175 L45,160 Z" onclick="toggleUpazila('u-sadar')" />
+          <text class="map-label" x="100" y="135">চাঁদপুর সদর</text>
+        </g>
+
+        <!-- ৭. ফরিদগঞ্জ -->
+        <g>
+          <path id="u-faridganj" class="upazila-shape" d="M140,175 L225,180 L210,245 L125,235 Z" onclick="toggleUpazila('u-faridganj')" />
+          <text class="map-label" x="175" y="210">ফরিদগঞ্জ</text>
+        </g>
+
+        <!-- ৮. হাইমচর -->
+        <g>
+          <path id="u-haimchar" class="upazila-shape" d="M45,160 L140,175 L125,235 L35,215 Z" onclick="toggleUpazila('u-haimchar')" />
+          <text class="map-label" x="87" y="195">হাইমচর</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="checklist-title no-capture">চাঁদপুরের উপজেলা/থানা নির্বাচন করুন:</div>
+
+    <!-- 8 Upazilas Checklist -->
+    <div class="spot-list no-capture">
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-sadar" onchange="syncMap('u-sadar')"><label for="chk-u-sadar">১. চাঁদপুর সদর</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-hajiganj" onchange="syncMap('u-hajiganj')"><label for="chk-u-hajiganj">২. হাজীগঞ্জ</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-shahrasti" onchange="syncMap('u-shahrasti')"><label for="chk-u-shahrasti">৩. শাহরাস্তি</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-matlab-n" onchange="syncMap('u-matlab-n')"><label for="chk-u-matlab-n">৪. মতলব উত্তর</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-matlab-s" onchange="syncMap('u-matlab-s')"><label for="chk-u-matlab-s">৫. মতলব দক্ষিণ</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-kachua" onchange="syncMap('u-kachua')"><label for="chk-u-kachua">৬. কচুয়া</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-faridganj" onchange="syncMap('u-faridganj')"><label for="chk-u-faridganj">৭. ফরিদগঞ্জ</label></div>
+      <div class="spot-item"><input type="checkbox" class="spot" id="chk-u-haimchar" onchange="syncMap('u-haimchar')"><label for="chk-u-haimchar">৮. হাইমচর</label></div>
+    </div>
+
+    <!-- Footer Progress -->
+    <div class="footer-progress">
+      <div class="progress-text" id="percentText">০% চাঁদপুর ঘোরা হয়েছে</div>
+      <div class="watermark">📍 Chandpur Explorer</div>
+    </div>
+
+    <button class="btn-download no-capture" onclick="downloadImage()">কার্ড ডাউনলোড করুন 📸</button>
+  </div>
+
+  <script>
+    const totalUpazilas = 8;
+
+    function updateResult() {
+      const nameInput = document.getElementById('userName').value.trim();
+      document.getElementById('userNameDisplay').innerText = nameInput ? nameInput : 'ভ্রমণকারী';
+      
+      const checked = document.querySelectorAll('.spot:checked').length;
+      const percentage = Math.round((checked / totalUpazilas) * 100);
+
+      document.getElementById('scoreNum').innerText = `${checked}/${totalUpazilas}`;
+      document.getElementById('percentText').innerText = `${percentage}% চাঁদপুর ঘোরা হয়েছে`;
+    }
+
+    function toggleUpazila(id) {
+      const checkbox = document.getElementById('chk-' + id);
+      const shape = document.getElementById(id);
+
+      checkbox.checked = !checkbox.checked;
+      if (checkbox.checked) {
+        shape.classList.add('active');
+      } else {
+        shape.classList.remove('active');
+      }
+      updateResult();
+    }
+
+    function syncMap(id) {
+      const checkbox = document.getElementById('chk-' + id);
+      const shape = document.getElementById(id);
+
+      if (checkbox.checked) {
+        shape.classList.add('active');
+      } else {
+        shape.classList.remove('active');
+      }
+      updateResult();
+    }
+
+    function loadProfileImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('avatar');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function downloadImage() {
+      const card = document.getElementById('captureCard');
+      const noCaptureElements = document.querySelectorAll('.no-capture');
+
+      noCaptureElements.forEach(el => el.style.display = 'none');
+
+      html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
+        let link = document.createElement('a');
+        link.download = 'chandpur-art-travel-map.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        noCaptureElements.forEach(el => el.style.display = 'block');
+      });
+    }
+  </script>
+
+</body>
+</html>
