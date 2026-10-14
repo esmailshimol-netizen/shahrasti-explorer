@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>চাঁদপুর জেলা ভ্রমণ মানচিত্র - Chandpur Explorer</title>
+  <!-- HTML2Canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #eef2f0; display: flex; justify-content: center; padding: 15px; margin: 0; }
+    
+    .card-container {
+      background: #fbfaf5;
+      max-width: 480px;
+      width: 100%;
+      padding: 20px;
+      border-radius: 24px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+      border: 1px solid #dcd5c0;
+      position: relative;
+    }
+    
+    /* Top Header Section */
+    .top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #e2dac8;
+      padding-bottom: 10px;
+    }
+
+    .profile-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-preview {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #006a4e;
+      background: #e0dccc;
+    }
+
+    .user-titles .subtitle {
+      font-size: 11.5px;
+      color: #555;
+      margin: 0;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .user-titles h3 {
+      font-size: 18px;
+      color: #111;
+      margin: 2px 0 0 0;
+    }
+
+    /* Score Badge */
+    .score-badge {
+      background: #006a4e;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 14px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 22px;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.25);
+    }
+
+    /* Input Controls */
+    .input-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+      background: #eee8d5;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #dcd5c0;
+    }
+    .input-controls input {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13.5px;
+      outline: none;
+      background: #fff;
+    }
+
+    /* Map Box Container */
+    .map-box {
+      width: 100%;
+      background: #0d1b14;
+      border-radius: 18px;
+      padding: 12px;
+      border: 2px solid #006a4e;
+      position: relative;
+      margin-bottom: 12px;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+
+    .map-overlay-title {
+      font-size: 12.5px;
+      font-weight: bold;
+      color: #ffd700;
+      margin-bottom: 6px;
+    }
+
+    .map-box svg {
+      width: 100%;
+      height: 250px;
+    }
+
+    /* Upazila SVG Path Styling */
+    .upazila-path {
+      fill: #2a3b32;
+      stroke: #ffffff;
+      stroke-width: 2;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upazila-path:hover {
+      fill: #3b5245;
+    }
+
+    /* Active Highlight Color when selected */
+    .upazila-path.active {
+      fill: #006a4e !important;
+      stroke: #ffd700 !important;
+      stroke-width: 2.5;
+    }
+
+    /* Map Labels inside SVG */
+    .map-label {
+      font-size: 11px;
+      fill: #ffffff;
+      font-weight: bold;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    /* Visited Places Tags on Card */
+    .visited-places-card {
+      background: #f0eae0;
+      border: 1px solid #dcd5c0;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .visited-title {
+      font-size: 11.5px;
+      font-weight: bold;
+      color: #006a4e;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .places-badge-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .place-badge {
+      background: #ffffff;
+      border: 1px solid #006a4e;
+      color: #006a4e;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Checklist Section */
+    .checklist-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #006a4e;
+      margin: 8px 0 6px 0;
+    }
+
+    .spot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 4px;
+      border-top: 1px solid #eae3d0;
+      padding-top: 8px;
+    }
+
+    .upazila-group {
+      background: #ffffff;
+      border: 1px solid #e2dbcc;
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .upazila-header {
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+      font-size: 13px;
+      color: #006a4e;
+      margin-bottom: 4px;
+    }
+    .upazila-header input { margin-right: 8px; transform: scale(1.2); cursor: pointer; }
+
+    .places-sublist {
+      margin-left: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .place-item {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #444;
+      cursor: pointer;
+    }
+    .place-item input { margin-right: 6px; cursor: pointer; }
+
+    /* Footer Progress & Developer Credit */
+    .footer-progress {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #eae3d0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .progress-text {
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+    }
+    .watermark {
+      font-size: 11px;
+      color: #006a4e;
+      font-weight: 700;
+    }
+
+    /* Creator Credit Tag */
+    .creator-tag {
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+      margin-top: 10px;
+      font-weight: 600;
+      border-top: 1px dashed #dcd5c0;
+      padding-top: 8px;
+    }
+    .creator-tag span {
+      color: #006a4e;
+      font-weight: bold;
+    }
+
+    .btn-download {
+      width: 100%;
+      background: #006a4e;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 106, 78, 0.3);
+    }
+    .btn-download:hover { background: #004d38; }
+    .no-capture { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="card-container" id="captureCard">
+    
+    <!-- Top Header Layout -->
+    <div class="top-header">
+      <div class="profile-box">
+        <img id="avatar" class="avatar-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 24 24' fill='%23999'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" alt="প্রোফাইল ছবি">
+        <div class="user-titles">
+          <p class="subtitle">চাঁদপুর জেলা ভ্রমণ মানচিত্র</p>
+          <h3 id="userNameDisplay">ইসমাইল হোসেন</h3>
+        </div>
+      </div>
+      
+      <div class="score-badge" id="scoreNum">
+        ০/৮
+      </div>
+    </div>
+
+    <!-- Controls to Edit Name & Image -->
+    <div class="input-controls no-capture">
+      <input type="text" id="userName" placeholder="আপনার নাম লিখুন..." oninput="updateResult()" value="ইসমাইল হোসেন">
+      <input type="file" id="imageInput" accept="image/*" onchange="loadProfileImage(event)">
+    </div>
+
+    <!-- SVG Map Box -->
+    <div class="map-box">
+      <div class="map-overlay-title">📍 চাঁদপুর জেলা ভ্রমণ মানচিত্র</div>
+      
+      <svg viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg">
+        <g onclick="toggleUpazila('matlab-n')">
+          <path id="path-matlab-n" class="upazila-path" d="M120,40 C160,20 220,25 250,50 L230,110 C180,100 130,105 100,80 Z" />
+          <text class="map-label" x="175" y="62">মতলব উত্তর</text>
+        </g>
+        <g onclick="toggleUpazila('matlab-s')">
+          <path id="path-matlab-s" class="upazila-path" d="M100,80 C130,105 180,100 230,110 L210,165 C170,155 120,150 90,135 Z" />
+          <text class="map-label" x="155" y="122">মতলব দক্ষিণ</text>
+        </g>
+        <g onclick="toggleUpazila('kachua')">
+          <path id="path-kachua" class="upazila-path" d="M250,50 C310,35 380,50 400,90 L340,150 C300,125 250,120 230,110 Z" />
+          <text class="map-label" x="310" y="90">কচুয়া</text>
+        </g>
+        <g onclick="toggleUpazila('hajiganj')">
+          <path id="path-hajiganj" class="upazila-path" d="M230,110 C250,120 300,125 340,150 L310,215 C260,200 220,185 210,165 Z" />
+          <text class="map-label" x="270" y="160">হাজীগঞ্জ</text>
+        </g>
+        <g onclick="toggleUpazila('sadar')">
+          <path id="path-sadar" class="upazila-path" d="M90,135 C120,150 170,155 210,165 L180,260 C130,245 70,220 50,180 Z" />
+          <text class="map-label" x="130" y="195">চাঁদপুর সদর</text>
+        </g>
+        <g onclick="toggleUpazila('shahrasti')">
+          <path id="path-shahrasti" class="upazila-path" d="M340,150 C380,160 440,180 460,220 L380,270 C350,240 320,225 310,215 Z" />
+          <text class="map-label" x="380" y="215">শাহরাস্তি</text>
+        </g>
+        <g onclick="toggleUpazila('faridganj')">
+          <path id="path-faridganj" class="upazila-path" d="M180,260 L210,165 L310,215 C320,225 350,240 380,270 L300,340 C230,320 190,290 180,260 Z" />
+          <text class="map-label" x="260" y="270">ফরিদগঞ্জ</text>
+        </g>
+        <g onclick="toggleUpazila('haimchar')">
+          <path id="path-haimchar" class="upazila-path" d="M50,180 C70,220 130,245 180,260 L140,350 C100,330 40,270 30,220 Z" />
+          <text class="map-label" x="100" y="270">হাইমচর</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Visited Spot List on Main Card -->
+    <div class="visited-places-card" id="visitedPlacesCard">
+      <div class="visited-title">📍 ভ্রমণ করা দর্শনীয় স্থানসমূহ:</div>
+      <div class="places-badge-container" id="placesBadgeContainer"></div>
+    </div>
+
+    <div class="checklist-title no-capture">উপজেলা ও দর্শনীয় স্থান নির্বাচন করুন:</div>
+
+    <!-- Checklist -->
+    <div class="spot-list no-capture">
+      
+      <!-- ১. চাঁদপুর সদর -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-sadar" onchange="syncMap('sadar')">
+          <label for="chk-sadar">১. চাঁদপুর সদর</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="বড় স্টেশন মোলহেড" onchange="updateResult()"> বড় স্টেশন মোলহেড (তিন নদীর মোহনা)</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="মিনি কক্সবাজার" onchange="updateResult()"> মিনি কক্সবাজার (রাজরাজেশ্বর)</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="অঙ্গীকার & ইলিশ চত্বর" onchange="updateResult()"> অঙ্গীকার ভাস্কর্য ও ইলিশ চত্বর</label>
+        </div>
+      </div>
+
+      <!-- ২. হাজীগঞ্জ -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-hajiganj" onchange="syncMap('hajiganj')">
+          <label for="chk-hajiganj">২. হাজীগঞ্জ</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="হাজীগঞ্জ বড় মসজিদ" onchange="updateResult()"> হাজীগঞ্জ ঐতিহাসিক বড় মসজিদ</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="বলাখাল জমিদার বাড়ি" onchange="updateResult()"> বলাখাল জমিদার বাড়ি</label>
+        </div>
+      </div>
+
+      <!-- ৩. শাহরাস্তি -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-shahrasti" onchange="syncMap('shahrasti')">
+          <label for="chk-shahrasti">৩. শাহরাস্তি</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="শাহরাস্তি মাজার" onchange="updateResult()"> হযরত শাহরাস্তি (রঃ) মাজার শরীফ</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="খেয়া ঘাট ক্যাফে" onchange="updateResult()"> খেয়া ঘাট ক্যাফে & রিভার ভিউ</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="মেহার কালীবাড়ি" onchange="updateResult()"> মেহার কালীবাড়ি</label>
+        </div>
+      </div>
+
+      <!-- ৪. মতলব উত্তর -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-matlab-n" onchange="syncMap('matlab-n')">
+          <label for="chk-matlab-n">৪. মতলব উত্তর</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="মোহনপুর পর্যটন কেন্দ্র" onchange="updateResult()"> মোহনপুর পর্যটন কেন্দ্র</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="লুধুয়া জমিদার বাড়ি" onchange="updateResult()"> লুধুয়া জমিদার বাড়ি</label>
+        </div>
+      </div>
+
+      <!-- ৫. মতলব দক্ষিণ -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-matlab-s" onchange="syncMap('matlab-s')">
+          <label for="chk-matlab-s">৫. মতলব দক্ষিণ</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="বোয়ালিয়া জমিদার বাড়ি" onchange="updateResult()"> বোয়ালিয়া জমিদার বাড়ি</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="মঠখোলার মঠ" onchange="updateResult()"> মঠখোলার মঠ</label>
+        </div>
+      </div>
+
+      <!-- ৬. কচুয়া -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-kachua" onchange="syncMap('kachua')">
+          <label for="chk-kachua">৬. কচুয়া</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="জগন্নাথ মন্দির (সাচার)" onchange="updateResult()"> শ্রী শ্রী জগন্নাথ মন্দির (সাচার)</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="সাহারপাড়ের দীঘি" onchange="updateResult()"> সাহারপাড়ের দীঘি</label>
+        </div>
+      </div>
+
+      <!-- ৭. ফরিদগঞ্জ -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-faridganj" onchange="syncMap('faridganj')">
+          <label for="chk-faridganj">৭. ফরিদগঞ্জ</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="রূপসা জমিদার বাড়ি" onchange="updateResult()"> রূপসা জমিদার বাড়ি</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="লোহাগড়া মঠ" onchange="updateResult()"> লোহাগড়া মঠ</label>
+        </div>
+      </div>
+
+      <!-- ৮. হাইমচর -->
+      <div class="upazila-group">
+        <div class="upazila-header">
+          <input type="checkbox" class="spot" id="chk-haimchar" onchange="syncMap('haimchar')">
+          <label for="chk-haimchar">৮. হাইমচর</label>
+        </div>
+        <div class="places-sublist">
+          <label class="place-item"><input type="checkbox" class="sub-place" value="মেঘনার চরাঞ্চল" onchange="updateResult()"> মেঘনার চরাঞ্চল ও সূর্যাস্ত পয়েন্ট</label>
+          <label class="place-item"><input type="checkbox" class="sub-place" value="মল্লিক বাড়ির মসজিদ" onchange="updateResult()"> মল্লিক বাড়ির তিন গম্বুজ মসজিদ</label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Progress -->
+    <div class="footer-progress">
+      <div class="progress-text" id="percentText">০% চাঁদপুর ঘোরা হয়েছে</div>
+      <div class="watermark">📍 Chandpur Explorer</div>
+    </div>
+
+    <!-- Permanent Creator Credit -->
+    <div class="creator-tag">
+      Designed & Developed by: <span>ইসমাইল হোসেন</span>
+    </div>
+
+    <button class="btn-download no-capture" onclick="downloadImage()">কার্ড ডাউনলোড করুন 📸</button>
+  </div>
+
+  <script>
+    const totalUpazilas = 8;
+
+    function updateResult() {
+      const nameInput = document.getElementById('userName').value.trim();
+      document.getElementById('userNameDisplay').innerText = nameInput ? nameInput : 'ভ্রমণকারী';
+      
+      const checkedUpazilas = document.querySelectorAll('.spot:checked').length;
+      const percentage = Math.round((checkedUpazilas / totalUpazilas) * 100);
+
+      document.getElementById('scoreNum').innerText = `${checkedUpazilas}/${totalUpazilas}`;
+      document.getElementById('percentText').innerText = `${percentage}% চাঁদপুর ঘোরা হয়েছে`;
+
+      // Update Sub-Places on Card
+      const selectedSubPlaces = document.querySelectorAll('.sub-place:checked');
+      const badgeContainer = document.getElementById('placesBadgeContainer');
+      const visitedCardBox = document.getElementById('visitedPlacesCard');
+
+      badgeContainer.innerHTML = '';
+      if (selectedSubPlaces.length > 0) {
+        visitedCardBox.style.display = 'block';
+        selectedSubPlaces.forEach(place => {
+          const badge = document.createElement('span');
+          badge.className = 'place-badge';
+          badge.innerHTML = `📍 ${place.value}`;
+          badgeContainer.appendChild(badge);
+        });
+      } else {
+        visitedCardBox.style.display = 'none';
+      }
+    }
+
+    function toggleUpazila(id) {
+      const checkbox = document.getElementById('chk-' + id);
+      const path = document.getElementById('path-' + id);
+
+      checkbox.checked = !checkbox.checked;
+      if (checkbox.checked) {
+        path.classList.add('active');
+      } else {
+        path.classList.remove('active');
+      }
+      updateResult();
+    }
+
+    function syncMap(id) {
+      const checkbox = document.getElementById('chk-' + id);
+      const path = document.getElementById('path-' + id);
+
+      if (checkbox.checked) {
+        path.classList.add('active');
+      } else {
+        path.classList.remove('active');
+      }
+      updateResult();
+    }
+
+    function loadProfileImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('avatar');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function downloadImage() {
+      const card = document.getElementById('captureCard');
+      const noCaptureElements = document.querySelectorAll('.no-capture');
+
+      noCaptureElements.forEach(el => el.style.display = 'none');
+
+      html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
+        const imageUrl = canvas.toDataURL('image/png');
+        
+        let link = document.createElement('a');
+        link.download = 'chandpur-travel-card.png';
+        link.href = imageUrl;
+        
+        if (navigator.userAgent.match(/(CriOS|FBIOS|FBAN)/i)) {
+          let w = window.open('');
+          w.document.write(`<img src="${imageUrl}" style="width:100%; border-radius:12px;" alt="Travel Card"/><p style="text-align:center; font-family:sans-serif; margin-top:15px; font-size:16px; color:#333;">ছবিটি সেভ করতে ছবির ওপর আঙুল দিয়ে চাপ দিয়ে ধরে রাখুন (Long Press) এবং <b>Download Image</b> বা <b>Save to Phone</b> সিলেক্ট করুন।</p>`);
+        } else {
+          link.click();
+        }
+
+        noCaptureElements.forEach(el => el.style.display = 'block');
+      });
+    }
+  </script>
+
+</body>
+</html>
